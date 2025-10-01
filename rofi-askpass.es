@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/local/bin/es
 
 # Take password prompt from STDIN, print password to STDOUT
 # the sed piece just removes the colon from the provided
@@ -6,4 +6,4 @@
 rofi -dmenu \
 	-password \
 	-no-fixed-num-lines \
-	-p "$(printf "$1" | sed s/://)"
+	-p `^{sed s/:// <<< $1}

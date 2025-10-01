@@ -1,16 +1,52 @@
 # rofi secrets
 
-You might want a slightly prettier way to put secrets into your computer.
+A collection of es scripts to get rofi to do more for us.  No warranty.
+
+Installation: just copy these scripts to somewhere in your PATH.
+Something like
+```
+cp *.es ~/.local/bin
+```
+
+## password-store modi
+
+The `rofi-pass.es` script allows you to use [`pass`](www.passwordstore.org) with rofi instead of a terminal. It makes use of the `rofi-pass.es` script, and probably requires the configuration in the up-next "gpg pinentry" section as well.
+
+To add this modi for your rofi, either call rofi like
+```
+rofi ... -modi '...,pass:rofi-pass.es,...
+```
+or set in your `.config/rofi/config.rasi`
+```
+configuration {
+    modes: [..., "pass:rofi-pass.es", ...];
+}
+```
+
+## gpg pinentry
+
+To use rofi as a pinentry tool when called from rofi (like from the `pass` modi just above), add the following line to your `~/.gnupg/gpg-agent.conf`:
+
+```
+pinentry-program <full path of pinentry-switch.es>
+```
+
+Then you'll need to edit your `pinentry-switch.es` script to point to the right `pinentry-rofi.es`. (Maybe these should all just get installed to /usr/local/bin?)
+
+Using `pinentry-switch.es` lets you use the normal `pinentry-tty` method when calling `pass` (or whatever else) from the terminal (or wherever else).
+
+If you want to use `pinentry-rofi.es` in all cases, then just set it directly as your `pinentry-program`.
 
 ## sudo
 
-Put the rofi-askpass.sh script somewhere useful, and add to your login script
+To get sudo password prompting into rofi, throw something like this to your login script:
 
 ```bash
-SUDO_ASKPASS="<location of rofi-askpass.sh>"
+SUDO_ASKPASS="<path to rofi-askpass.sh>"
 
 function asudo {
-    if [[ -n $DISPLAY ]]; then
+    # Assuming you have a rofi that handles Wayland
+    if [[ -n $DISPLAY || -n $WAYLAND_DISPLAY ]]; then
         sudo -A $*
     else
         sudo $*
@@ -20,26 +56,20 @@ function asudo {
 alias sudo=asudo
 ```
 
-## password-store modi
-
-To add a nice modi for your rofi, put `rofi-pass.es` somewhere in your `$PATH` (TODO: maybe rewrite this in a language people actually use) and call rofi like `rofi ... -modi '...,pass:rofi-pass.es,...`
-
-## gpg pinentry
-
-To use rofi as a pinentry tool when called from rofi (e.g., from the `pass` modi), put the `pinentry-rofi.sh` and `pinentry-switch` scripts somewhere useful, edit the latter to properly point to the former, and add the following line to your `~/.gnupg/gpg-agent.conf`:
-
-```
-pinentry-program <location of pinentry-switch>
-```
-
-Using `pinentry-switch` lets you use the normal `pinentry-tty` method when calling `pass` (or whatever else) from the terminal (or wherever else).
+Note that wrapping sudo in functions to change its default behavior is probably a bad idea.
 
 ## emoji
 
-This one isn't secrets, but good stuff happens when you use `rofi-emoji.es`.
+This one doesn't have to do with passwords, but if you run
+```shell
+$ rofi-emoji.es --download
+```
+and then configure in your `~/.config/rofi/config.rasi`
+```
+configuration {
+    modes: [..., "emoji:rofi-emoji.es", ...];
+}
+```
+you can get emoji in your rofi.
 
-## TODO
-
- - ssh?
- - make this more easily installable
- - port away from es, if this is to be useful to anybody
+Uses `xmllint` and `xsel`.  Probably need to swap out that `xsel` for Wayland.
